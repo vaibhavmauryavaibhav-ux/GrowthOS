@@ -1,0 +1,58 @@
+# Base System
+base
+base-devel
+linux
+linux-firmware
+efibootmgr
+grub
+networkmanager
+git
+curl
+wget
+vim
+nano
+sudo
+which
+pciutils
+usbutils
+
+# Window Manager & Display (Wayland & Hyprland)
+hyprland
+waybar
+wofi
+kitty
+xdg-desktop-portal-hyprland
+polkit-kde-agent
+qt5-wayland
+qt6-wayland
+
+# Cognitive Tools & Readers
+zathura
+zathura-pdf-mupdf
+xournalpp
+
+# Screen Capture & Clipboard (for Quick Capture Super+Shift+S)
+grim
+slurp
+wl-clipboard
+imv
+libnotify
+mako
+
+# Audio & Media
+pipewire
+pipewire-alsa
+pipewire-pulse
+wireplumber
+
+# Security & Distraction Firewall
+nftables
+iptables-nft
+
+# Development & Runtime
+python
+python-pip
+python-yaml
+python-pillow
+python-requests
+sqlite

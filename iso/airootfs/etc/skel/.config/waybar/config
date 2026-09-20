@@ -1,0 +1,72 @@
+{
+    "layer": "top",
+    "position": "top",
+    "height": 38,
+    "margin-top": 6,
+    "margin-left": 12,
+    "margin-right": 12,
+    "spacing": 8,
+    "modules-left": [
+        "hyprland/workspaces",
+        "custom/focus_status"
+    ],
+    "modules-center": [
+        "custom/jee_countdown",
+        "custom/targets",
+        "custom/recall_due"
+    ],
+    "modules-right": [
+        "pulseaudio",
+        "cpu",
+        "memory",
+        "clock",
+        "custom/power"
+    ],
+    "hyprland/workspaces": {
+        "format": "{id}",
+        "on-click": "activate",
+        "all-outputs": true
+    },
+    "custom/focus_status": {
+        "format": "⚡ FOCUS: {}%",
+        "exec": "python /usr/local/share/growth-os/daemons/hud_status.py focus",
+        "interval": 2,
+        "tooltip": true
+    },
+    "custom/jee_countdown": {
+        "format": "⏳ JEE ADV: {}d",
+        "exec": "python /usr/local/share/growth-os/daemons/hud_status.py countdown",
+        "interval": 60,
+        "tooltip": "Days remaining until JEE Advanced"
+    },
+    "custom/targets": {
+        "format": "🎯 TARGET: {}",
+        "exec": "python /usr/local/share/growth-os/daemons/hud_status.py target",
+        "interval": 2,
+        "tooltip": true
+    },
+    "custom/recall_due": {
+        "format": "🧠 DUE: {}",
+        "exec": "python /usr/local/share/growth-os/daemons/hud_status.py recall",
+        "interval": 5,
+        "on-click": "kitty -e python /usr/local/share/growth-os/tools/recall_runner.py"
+    },
+    "clock": {
+        "format": " {:%H:%M | %b %d}",
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    },
+    "cpu": {
+        "format": " {usage}%",
+        "tooltip": false
+    },
+    "memory": {
+        "format": " {}%"
+    },
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-muted": "",
+        "format-icons": {
+            "default": ["", "", ""]
+        }
+    }
+}

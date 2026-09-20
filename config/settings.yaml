@@ -1,0 +1,58 @@
+# Cognitive Growth OS - Core Settings
+
+# Focus & Auto Mode Settings
+focus:
+  default_mode: "auto"          # "auto" or "manual"
+  idle_timeout_seconds: 240     # 4 minutes idle before focus check
+  monk_mode_enabled: false      # Kernel/hosts level distraction blocker
+
+# Whitelist patterns for Auto Mode
+# When any active window or browser tab matches these patterns,
+# the Focus HUD automatically activates and starts logging focus time.
+auto_mode_patterns:
+  - "*pw.live*"
+  - "*pw.live/*"
+  - "*physicswallah*"
+  - "*unacademy*"
+  - "*allen.in*"
+  - "*resonance.ac.in*"
+  - "*neetprep*"
+  - "*chemguide*"
+  - "*libretexts*"
+  - "*.pdf*"
+  - "*zathura*"
+  - "*xournalpp*"
+  - "*obsidian*"
+
+# Blacklist domains for Monk Mode (Hard Lockdown)
+monk_mode_blacklist:
+  - "youtube.com/shorts"
+  - "instagram.com"
+  - "reddit.com"
+  - "twitter.com"
+  - "x.com"
+  - "discord.com"
+  - "twitch.tv"
+  - "netflix.com"
+
+# Timed Question Trainer Defaults
+question_trainer:
+  default_question_count: 20
+  default_time_per_question_seconds: 150   # 2.5 minutes per question
+  mode: "paced"                            # "paced" (per-question countdown) or "open" (stopwatch +1)
+  alert_audio_enabled: true
+
+# Spaced Repetition (FSRS) Defaults
+spaced_repetition:
+  default_review_time_seconds: 60          # 60s per card timer during recall drills
+  problem_review_time_seconds: 180        # 3 minutes for full problem cards
+  target_retention: 0.90                  # 90% target retention rate
+  daily_new_card_limit: 50
+
+# AI Agent Configuration (Grok / LLM API)
+ai:
+  provider: "grok"                        # "grok", "openai", "gemini"
+  api_key_env: "GROK_API_KEY"
+  base_url: "https://api.x.ai/v1"
+  model: "grok-2-vision-1212"
+  socratic_mode: true                     # Never reveal full answer immediately; guide with hints

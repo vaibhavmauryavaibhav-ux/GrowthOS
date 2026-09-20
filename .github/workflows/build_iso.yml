@@ -1,0 +1,82 @@
+name: Build Growth OS Bootable ISO
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-iso:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Free disk space on runner
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+
+      - name: Build Bootable Arch Linux ISO via Docker
+        run: |
+          docker run --privileged --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            archlinux:base-devel bash -c "
+              set -e
+              echo '[+] Initializing Arch Linux build environment...'
+              pacman-key --init
+              pacman-key --populate archlinux
+              pacman -Syu --noconfirm archiso git python-yaml
+
+              echo '[+] Copying system codebase into rootfs...'
+              mkdir -p iso/airootfs/usr/local/share/growth-os
+              cp -r core iso/airootfs/usr/local/share/growth-os/
+              cp -r daemons iso/airootfs/usr/local/share/growth-os/
+              cp -r tools iso/airootfs/usr/local/share/growth-os/
+              cp -r hud iso/airootfs/usr/local/share/growth-os/
+              cp -r plugins iso/airootfs/usr/local/share/growth-os/
+              cp -r config iso/airootfs/usr/local/share/growth-os/
+
+              # Ensure execute permissions on scripts
+              chmod +x iso/airootfs/usr/local/share/growth-os/tools/*.py || true
+
+              echo '[+] Building ISO with mkarchiso...'
+              mkdir -p /tmp/archiso-work
+              mkdir -p iso/out
+              mkarchiso -v -w /tmp/archiso-work -o iso/out iso/
+              echo '[✓] Build completed successfully!'
+              ls -la iso/out/
+            "
+
+      - name: Upload Growth OS ISO Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GrowthOS-x86_64-Live-ISO
+          path: iso/out/*.iso
+          retention-days: 14
+
+      - name: Create Release with Bootable ISO
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: iso/out/*.iso
+          tag_name: v1.0.0
+          name: "Growth OS v1.0.0 - Bootable Live ISO"
+          body: |
+            ## Growth OS - Cognitive Engineering & Academic Operating System
+            
+            Flash this ISO to a USB drive using Rufus (in DD or ISO mode) or copy directly into a Ventoy drive.
+            
+            ### Included Features:
+            * **Hyprland Wayland Compositor** with hardware-accelerated blur and animations.
+            * **Waybar HUD**: Real-time Focus score, JEE exam countdown, due recall cards.
+            * **Spaced Repetition (FSRS)**: Active recall engine with timed testing.
+            * **Mistake Ledger**: Academic error tracker with auto-sync to recall.
+            * **Observer Daemon**: Auto-detects focus blocks when studying.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
