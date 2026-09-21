@@ -43,12 +43,13 @@ echo [+] Pushing to GitHub...
 git push -u origin main
 
 if %errorlevel% equ 0 (
+    set "WEB_URL=%REPO_URL:.git=%"
     echo.
     echo ===================================================
     echo [OK] SUCCESS! Pushed to GitHub!
     echo.
     echo Now open your browser to:
-    echo   %REPO_URL%/actions
+    echo   !WEB_URL!/actions
     echo.
     echo Watch the 'Build Growth OS Bootable ISO' action.
     echo In ~10 minutes, your GrowthOS-x86_64.iso will be ready to download!
