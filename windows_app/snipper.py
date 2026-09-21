@@ -83,6 +83,13 @@ class CardCreationDialog(QDialog):
 
         # Action Buttons
         btn_layout = QHBoxLayout()
+
+        self.ai_btn = QPushButton("✨ AI Auto-Transcribe (LaTeX)")
+        self.ai_btn.setProperty("class", "secondary-btn")
+        self.ai_btn.setStyleSheet("color: #cba6f7; border: 1px solid #cba6f7; font-weight: bold;")
+        self.ai_btn.clicked.connect(self.run_ai_transcription)
+        btn_layout.addWidget(self.ai_btn)
+
         btn_layout.addStretch()
 
         cancel_btn = QPushButton("Cancel")
@@ -96,6 +103,49 @@ class CardCreationDialog(QDialog):
         btn_layout.addWidget(save_btn)
 
         layout.addLayout(btn_layout)
+
+    def run_ai_transcription(self):
+        self.ai_btn.setEnabled(False)
+        self.ai_btn.setText("⚡ Extracting LaTeX...")
+        from PyQt6.QtCore import QThread
+        class VisionWorker(QThread):
+            result_ready = pyqtSignal(dict)
+            def __init__(self, path):
+                super().__init__()
+                self.path = path
+            def run(self):
+                from core.ai_vision import analyze_snip_with_vision
+                res = analyze_snip_with_vision(self.path)
+                self.result_ready.emit(res)
+
+        self.worker = VisionWorker(self.image_path)
+        self.worker.result_ready.connect(self.on_vision_ready)
+        self.worker.start()
+
+    def on_vision_ready(self, data: dict):
+        self.ai_btn.setEnabled(True)
+        if "error" in data:
+            self.ai_btn.setText("⚠️ AI Error")
+            self.prompt_edit.setPlaceholderText(f"AI Error: {data['error']}")
+            return
+
+        self.ai_btn.setText("✓ Transcribed!")
+        subj = data.get("subject", "Physics")
+        idx = self.subject_box.findText(subj)
+        if idx >= 0:
+            self.subject_box.setCurrentIndex(idx)
+
+        q_text = data.get("question", "")
+        if q_text:
+            self.prompt_edit.setText(q_text)
+
+        sol_text = data.get("solution", "")
+        if sol_text:
+            self.answer_edit.setText(sol_text)
+
+        tags = data.get("tags", [])
+        if tags:
+            self.tags_edit.setText(", ".join(tags))
 
     def save_card(self):
         prompt = self.prompt_edit.text().strip() or "Review Snippet"

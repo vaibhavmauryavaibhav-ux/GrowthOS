@@ -16,6 +16,9 @@ class GlobalHotkeyEmitter(QObject):
     recall_signal = pyqtSignal()
     increment_signal = pyqtSignal()
     monk_signal = pyqtSignal()
+    spotlight_signal = pyqtSignal()
+    coach_signal = pyqtSignal()
+    audio_signal = pyqtSignal()
 
 class WindowsHotkeyService:
     def __init__(self, emitter: GlobalHotkeyEmitter):
@@ -32,6 +35,9 @@ class WindowsHotkeyService:
                 '<alt>+<shift>+r': self.emitter.recall_signal.emit,
                 '<alt>+<shift>+<right>': self.emitter.increment_signal.emit,
                 '<alt>+<shift>+w': self.emitter.monk_signal.emit,
+                '<alt>+<space>': self.emitter.spotlight_signal.emit,
+                '<alt>+<shift>+d': self.emitter.coach_signal.emit,
+                '<alt>+<shift>+a': self.emitter.audio_signal.emit,
             }
 
             self.listener = keyboard.GlobalHotKeys(hotkey_map)

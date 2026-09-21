@@ -13,6 +13,7 @@ venv/
 *.db-journal
 .growth_os/
 captures/
+.env
 download_iso_to_desktop.py
 
 # Build artifacts

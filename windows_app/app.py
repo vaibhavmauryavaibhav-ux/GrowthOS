@@ -18,6 +18,8 @@ from windows_app.hotkey_service import GlobalHotkeyEmitter, WindowsHotkeyService
 from windows_app.snipper import trigger_snipper
 from windows_app.mistake_dialog import open_mistake_dialog
 from windows_app.recall_dialog import open_recall_dialog
+from windows_app.formula_spotlight import open_formula_spotlight
+from windows_app.coach_dialog import open_coach_dialog
 
 def run_app():
     # High-DPI support
@@ -44,6 +46,9 @@ def run_app():
     emitter.recall_signal.connect(open_recall_dialog)
     emitter.increment_signal.connect(hud_bar.quick_increment_solved)
     emitter.monk_signal.connect(hud_bar.toggle_monk_mode)
+    emitter.spotlight_signal.connect(open_formula_spotlight)
+    emitter.coach_signal.connect(open_coach_dialog)
+    emitter.audio_signal.connect(hud_bar.toggle_audio)
 
     hotkey_service = WindowsHotkeyService(emitter)
     hotkey_service.start()

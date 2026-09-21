@@ -30,6 +30,11 @@ from windows_app.snipper import trigger_snipper
 from windows_app.mistake_dialog import open_mistake_dialog
 from windows_app.recall_dialog import open_recall_dialog
 from windows_app.trainer_dialog import open_trainer_dialog
+from windows_app.formula_spotlight import open_formula_spotlight
+from windows_app.coach_dialog import open_coach_dialog
+from windows_app.cbt_lockdown import open_cbt_lockdown
+from windows_app.syllabus_radar import open_syllabus_radar
+from core.audio_engine import focus_audio
 
 class HudBar(QWidget):
     """Floating Acrylic Top Bar docked to the top-center of the screen."""
@@ -46,7 +51,7 @@ class HudBar(QWidget):
 
         self.drag_position = QPoint()
         self.is_collapsed = False
-        self.expanded_width = 820
+        self.expanded_width = 1110
         self.bar_height = 42
 
         self._build_ui()
@@ -104,6 +109,8 @@ class HudBar(QWidget):
         # 4. Target Pill
         self.target_pill = QFrame()
         self.target_pill.setProperty("class", "pill")
+        self.target_pill.setToolTip("Click to view full JEE Syllabus Weakness Radar & Heatmap")
+        self.target_pill.mousePressEvent = lambda e: open_syllabus_radar()
         tgt_box = QHBoxLayout(self.target_pill)
         tgt_box.setContentsMargins(4, 2, 4, 2)
         self.target_lbl = QLabel("🎯 TARGET: --")
@@ -132,7 +139,35 @@ class HudBar(QWidget):
         self.mistake_btn.clicked.connect(open_mistake_dialog)
         self.content_layout.addWidget(self.mistake_btn)
 
-        # 8. +1 Solved Button
+        # 8. Formulas Spotlight Button
+        self.spotlight_btn = QPushButton("🔍 FORMULAS")
+        self.spotlight_btn.setProperty("class", "pill-btn")
+        self.spotlight_btn.setToolTip("Instant Formula & Reaction Spotlight [Alt+Space]")
+        self.spotlight_btn.clicked.connect(open_formula_spotlight)
+        self.content_layout.addWidget(self.spotlight_btn)
+
+        # 9. AI Sparring Coach Button
+        self.coach_btn = QPushButton("🤖 COACH")
+        self.coach_btn.setProperty("class", "pill-btn")
+        self.coach_btn.setToolTip("Socratic AI Sparring Coach [Alt+Shift+D]")
+        self.coach_btn.clicked.connect(open_coach_dialog)
+        self.content_layout.addWidget(self.coach_btn)
+
+        # 10. CBT Mock Exam Button
+        self.cbt_btn = QPushButton("🛡️ CBT")
+        self.cbt_btn.setProperty("class", "pill-btn")
+        self.cbt_btn.setToolTip("3-Hour CBT Mock Exam Simulator")
+        self.cbt_btn.clicked.connect(open_cbt_lockdown)
+        self.content_layout.addWidget(self.cbt_btn)
+
+        # 11. Focus Audio Engine Button
+        self.audio_btn = QPushButton("🎧 AUDIO")
+        self.audio_btn.setProperty("class", "pill-btn")
+        self.audio_btn.setToolTip("Cycle 40Hz Gamma / Brown Noise / Off [Alt+Shift+A]")
+        self.audio_btn.clicked.connect(self.toggle_audio)
+        self.content_layout.addWidget(self.audio_btn)
+
+        # 12. +1 Solved Button
         self.plus_btn = QPushButton("+1")
         self.plus_btn.setProperty("class", "pill-btn")
         self.plus_btn.setStyleSheet(f"color: {COLOR_GREEN}; font-weight: bold;")
@@ -140,7 +175,7 @@ class HudBar(QWidget):
         self.plus_btn.clicked.connect(self.quick_increment_solved)
         self.content_layout.addWidget(self.plus_btn)
 
-        # 9. Monk Mode Button
+        # 13. Monk Mode Button
         self.monk_btn = QPushButton("🔒 MONK")
         self.monk_btn.setProperty("class", "pill-btn")
         self.monk_btn.setToolTip("Toggle distraction firewall lock [Alt+Shift+W]")
@@ -226,6 +261,18 @@ class HudBar(QWidget):
         else:
             monk_guardian.disable_lockdown()
         self.update_telemetry()
+
+    def toggle_audio(self):
+        mode = focus_audio.toggle()
+        if mode == "GAMMA":
+            self.audio_btn.setText("🎧 40Hz GAMMA")
+            self.audio_btn.setStyleSheet("color: #b4befe; border: 1px solid #b4befe; font-weight: bold;")
+        elif mode == "BROWN":
+            self.audio_btn.setText("🎧 BROWN NOISE")
+            self.audio_btn.setStyleSheet("color: #fab387; border: 1px solid #fab387; font-weight: bold;")
+        else:
+            self.audio_btn.setText("🎧 AUDIO")
+            self.audio_btn.setStyleSheet("")
 
     # Drag window handling
     def mousePressEvent(self, event):

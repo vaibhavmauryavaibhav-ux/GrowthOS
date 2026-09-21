@@ -49,10 +49,10 @@ spaced_repetition:
   target_retention: 0.90                  # 90% target retention rate
   daily_new_card_limit: 50
 
-# AI Agent Configuration (Grok / LLM API)
+# AI Agent Configuration (Gemini Multimodal Vision + Groq Reasoning)
 ai:
-  provider: "grok"                        # "grok", "openai", "gemini"
-  api_key_env: "GROK_API_KEY"
-  base_url: "https://api.x.ai/v1"
-  model: "grok-2-vision-1212"
+  provider: "gemini"                      # "gemini" or "groq"
+  gemini_model: "gemini-2.5-flash"
+  gemini_fallback_model: "gemini-1.5-flash"
+  groq_model: "llama-3.3-70b-versatile"
   socratic_mode: true                     # Never reveal full answer immediately; guide with hints

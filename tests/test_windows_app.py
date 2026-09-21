@@ -53,5 +53,32 @@ class TestWindowsApp(unittest.TestCase):
         self.assertIsNotNone(t_dlg)
         t_dlg.close()
 
+    def test_new_features_instantiation(self):
+        from windows_app.formula_spotlight import FormulaSpotlightDialog
+        from windows_app.coach_dialog import CoachDialog
+        from windows_app.cbt_lockdown import CbtLockdownDialog
+        from windows_app.syllabus_radar import SyllabusRadarDialog
+        from core.audio_engine import focus_audio
+
+        f_dlg = FormulaSpotlightDialog()
+        self.assertIsNotNone(f_dlg)
+        f_dlg.close()
+
+        c_dlg = CoachDialog()
+        self.assertIsNotNone(c_dlg)
+        c_dlg.close()
+
+        cbt_dlg = CbtLockdownDialog()
+        self.assertIsNotNone(cbt_dlg)
+        cbt_dlg.timer.stop()
+        cbt_dlg.close()
+
+        s_dlg = SyllabusRadarDialog()
+        self.assertIsNotNone(s_dlg)
+        s_dlg.close()
+
+        # Audio toggle test
+        self.assertEqual(focus_audio.mode, "OFF")
+
 if __name__ == "__main__":
     unittest.main()

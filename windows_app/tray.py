@@ -18,6 +18,10 @@ from windows_app.snipper import trigger_snipper
 from windows_app.mistake_dialog import open_mistake_dialog
 from windows_app.recall_dialog import open_recall_dialog
 from windows_app.trainer_dialog import open_trainer_dialog
+from windows_app.formula_spotlight import open_formula_spotlight
+from windows_app.coach_dialog import open_coach_dialog
+from windows_app.cbt_lockdown import open_cbt_lockdown
+from windows_app.syllabus_radar import open_syllabus_radar
 
 RUN_REG_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
 APP_NAME = "GrowthOS"
@@ -126,8 +130,23 @@ class WindowsSystemTray(QSystemTrayIcon):
         recall_act = menu.addAction("🧠 Active Recall Drill [Alt+Shift+R]")
         recall_act.triggered.connect(open_recall_dialog)
 
+        spotlight_act = menu.addAction("🔍 Formula & Reaction Spotlight [Alt+Space]")
+        spotlight_act.triggered.connect(open_formula_spotlight)
+
+        coach_act = menu.addAction("🤖 Socratic AI Sparring Coach [Alt+Shift+D]")
+        coach_act.triggered.connect(open_coach_dialog)
+
+        cbt_act = menu.addAction("🛡️ 3-Hour CBT Mock Exam Simulator")
+        cbt_act.triggered.connect(open_cbt_lockdown)
+
+        radar_act = menu.addAction("🗺️ JEE Syllabus Weakness Radar")
+        radar_act.triggered.connect(open_syllabus_radar)
+
         trainer_act = menu.addAction("⏱ Question Trainer")
         trainer_act.triggered.connect(open_trainer_dialog)
+
+        audio_act = menu.addAction("🎧 Toggle Focus Audio (40Hz / Brown) [Alt+Shift+A]")
+        audio_act.triggered.connect(self.hud_bar.toggle_audio)
 
         monk_act = menu.addAction("🔒 Toggle Monk Mode [Alt+Shift+W]")
         monk_act.triggered.connect(self.hud_bar.toggle_monk_mode)
