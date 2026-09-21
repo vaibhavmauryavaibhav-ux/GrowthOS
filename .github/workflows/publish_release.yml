@@ -1,0 +1,54 @@
+name: Publish ISO Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Artifact from Successful Build
+        uses: actions/download-artifact@v4
+        with:
+          name: GrowthOS-x86_64-Live-ISO
+          run-id: 35581796349
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ./release_assets
+
+      - name: Unzip ISO if zipped
+        run: |
+          cd ./release_assets
+          ls -la
+          for f in *.zip; do
+            if [ -f "$f" ]; then
+              unzip -q "$f" || true
+              rm "$f"
+            fi
+          done
+          ls -la
+
+      - name: Create GitHub Release with Fast CDN Download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: "Growth OS v1.0.0 - Bootable Live ISO"
+          files: release_assets/*
+          body: |
+            ## Growth OS v1.0.0 - Bootable Live ISO
+            
+            Direct high-speed CDN download of **`GrowthOS-x86_64.iso`**.
+            
+            ### Quick Start:
+            1. Download `GrowthOS-x86_64.iso` below (full CDN speed).
+            2. Flash to a USB drive using **Rufus** or copy to **Ventoy**.
+            3. Boot and enter the distraction-free Hyprland cognitive cockpit!
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
