@@ -31,24 +31,44 @@ jobs:
               echo '[+] Initializing Arch Linux build environment...'
               pacman-key --init
               pacman-key --populate archlinux
-              pacman -Syu --noconfirm archiso git python-yaml
+              pacman -Syu --noconfirm archiso git grub syslinux
 
-              echo '[+] Copying system codebase into rootfs...'
-              mkdir -p iso/airootfs/usr/local/share/growth-os
-              cp -r core iso/airootfs/usr/local/share/growth-os/
-              cp -r daemons iso/airootfs/usr/local/share/growth-os/
-              cp -r tools iso/airootfs/usr/local/share/growth-os/
-              cp -r hud iso/airootfs/usr/local/share/growth-os/
-              cp -r plugins iso/airootfs/usr/local/share/growth-os/
-              cp -r config iso/airootfs/usr/local/share/growth-os/
+              echo '[+] Copying base official releng profile...'
+              cp -r /usr/share/archiso/configs/releng /tmp/growth-profile
 
-              # Ensure execute permissions on scripts
-              chmod +x iso/airootfs/usr/local/share/growth-os/tools/*.py || true
+              echo '[+] Appending Growth OS packages...'
+              cat iso/packages.x86_64 >> /tmp/growth-profile/packages.x86_64
+              # Deduplicate packages
+              sort -u /tmp/growth-profile/packages.x86_64 -o /tmp/growth-profile/packages.x86_64
 
-              echo '[+] Building ISO with mkarchiso...'
+              echo '[+] Customizing profile metadata...'
+              sed -i 's/iso_name=\"archlinux\"/iso_name=\"GrowthOS\"/' /tmp/growth-profile/profiledef.sh
+              sed -i 's/iso_label=\"ARCH_\$(date +%Y%m)\"/iso_label=\"GROWTH_OS_\$(date +%Y%m)\"/' /tmp/growth-profile/profiledef.sh
+
+              echo '[+] Injecting Growth OS code into rootfs...'
+              mkdir -p /tmp/growth-profile/airootfs/usr/local/share/growth-os
+              cp -r core /tmp/growth-profile/airootfs/usr/local/share/growth-os/
+              cp -r daemons /tmp/growth-profile/airootfs/usr/local/share/growth-os/
+              cp -r tools /tmp/growth-profile/airootfs/usr/local/share/growth-os/
+              cp -r hud /tmp/growth-profile/airootfs/usr/local/share/growth-os/
+              cp -r plugins /tmp/growth-profile/airootfs/usr/local/share/growth-os/
+              cp -r config /tmp/growth-profile/airootfs/usr/local/share/growth-os/
+
+              echo '[+] Injecting Hyprland, Waybar, Kitty, and Wofi configurations...'
+              mkdir -p /tmp/growth-profile/airootfs/etc/skel/.config
+              mkdir -p /tmp/growth-profile/airootfs/root/.config
+              cp -r iso/airootfs/etc/skel/.config/* /tmp/growth-profile/airootfs/etc/skel/.config/
+              cp -r iso/airootfs/etc/skel/.config/* /tmp/growth-profile/airootfs/root/.config/
+
+              # Auto-start Hyprland on live boot tty1
+              echo 'if [ -z \"\$DISPLAY\" ] && [ \"\$(tty)\" = \"/dev/tty1\" ]; then exec Hyprland; fi' >> /tmp/growth-profile/airootfs/root/.bash_profile
+              echo 'if [ -z \"\$DISPLAY\" ] && [ \"\$(tty)\" = \"/dev/tty1\" ]; then exec Hyprland; fi' >> /tmp/growth-profile/airootfs/etc/skel/.bash_profile
+
+              echo '[+] Building bootable ISO with mkarchiso...'
               mkdir -p /tmp/archiso-work
               mkdir -p iso/out
-              mkarchiso -v -w /tmp/archiso-work -o iso/out iso/
+              mkarchiso -v -w /tmp/archiso-work -o iso/out /tmp/growth-profile
+
               echo '[✓] Build completed successfully!'
               ls -la iso/out/
             "
@@ -73,10 +93,10 @@ jobs:
             Flash this ISO to a USB drive using Rufus (in DD or ISO mode) or copy directly into a Ventoy drive.
             
             ### Included Features:
-            * **Hyprland Wayland Compositor** with hardware-accelerated blur and animations.
-            * **Waybar HUD**: Real-time Focus score, JEE exam countdown, due recall cards.
-            * **Spaced Repetition (FSRS)**: Active recall engine with timed testing.
-            * **Mistake Ledger**: Academic error tracker with auto-sync to recall.
-            * **Observer Daemon**: Auto-detects focus blocks when studying.
+            * **Hyprland Wayland Desktop** with Catppuccin Mocha aesthetic and glassmorphism.
+            * **Waybar Top HUD**: Real-time Focus score, JEE countdown ticker, targets, due recall cards.
+            * **FSRS Spaced Repetition Engine**: Active retrieval drills with automatic countdowns.
+            * **Mistake Ledger**: Error root-cause logging with auto-sync to recall.
+            * **Observer Telemetry**: Auto-detects focus time on study sites (pw.live, etc.).
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

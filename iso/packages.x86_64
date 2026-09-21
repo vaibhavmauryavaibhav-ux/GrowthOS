@@ -1,37 +1,25 @@
-# Base System
-base
-base-devel
-linux
-linux-firmware
-efibootmgr
-grub
-networkmanager
-git
-curl
-wget
-vim
-nano
-sudo
-which
-pciutils
-usbutils
+# Growth OS Packages (appended to Arch Linux releng profile)
 
-# Window Manager & Display (Wayland & Hyprland)
+# Window Manager & Wayland Cockpit
 hyprland
 waybar
 wofi
 kitty
 xdg-desktop-portal-hyprland
-polkit-kde-agent
 qt5-wayland
 qt6-wayland
 
-# Cognitive Tools & Readers
+# Aesthetic Fonts & Icons
+ttf-jetbrains-mono-nerd
+noto-fonts
+noto-fonts-emoji
+
+# Cognitive Tools & Document Readers
 zathura
 zathura-pdf-mupdf
 xournalpp
 
-# Screen Capture & Clipboard (for Quick Capture Super+Shift+S)
+# Screen Capture & Wayland Utilities
 grim
 slurp
 wl-clipboard
@@ -39,17 +27,16 @@ imv
 libnotify
 mako
 
-# Audio & Media
+# Audio Stack
 pipewire
 pipewire-alsa
 pipewire-pulse
 wireplumber
 
-# Security & Distraction Firewall
+# Network & Distraction Firewall
 nftables
-iptables-nft
 
-# Development & Runtime
+# Python Environment & Libraries
 python
 python-pip
 python-yaml
