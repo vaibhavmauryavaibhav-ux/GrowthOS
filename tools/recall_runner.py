@@ -11,6 +11,9 @@ import subprocess
 from pathlib import Path
 from typing import Dict, Any
 
+# Ensure project root is in sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from core.db import get_due_recall_cards, update_card_fsrs
 from core.fsrs_engine import FSRSEngine
 from core.plugin_manager import plugin_manager

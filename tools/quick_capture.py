@@ -12,6 +12,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+# Ensure project root is in sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from core.db import add_recall_card
 
 CAPTURES_DIR = Path.home() / ".growth_os" / "captures"

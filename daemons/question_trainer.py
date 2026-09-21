@@ -4,7 +4,13 @@ Implements per-question paced countdowns and open-ended stopwatch with +1 counte
 """
 
 import time
+import sys
+from pathlib import Path
 from typing import Dict, Any, Optional
+
+# Ensure project root is in sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from core.db import start_session, end_session, log_question_solved, update_target_progress, get_active_targets
 from core.plugin_manager import plugin_manager
 

@@ -8,6 +8,10 @@ import os
 import subprocess
 from pathlib import Path
 from typing import List
+
+# Ensure project root is in sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from core.config_loader import load_settings
 
 class MonkGuardian:

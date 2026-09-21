@@ -7,6 +7,10 @@ Records study & mock test mistakes and instantly creates an active-recall flashc
 import sys
 import argparse
 from pathlib import Path
+
+# Ensure project root is in sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from core.db import log_mistake, get_mistakes
 from tools.quick_capture import capture_screen_snippet, CAPTURES_DIR
 from datetime import datetime

@@ -7,7 +7,12 @@ Cross-platform support: Wayland (Hyprland), X11, and Windows testing fallback.
 import sys
 import time
 import fnmatch
+from pathlib import Path
 from typing import Tuple, List, Optional, Dict, Any
+
+# Ensure project root is in sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from core.db import start_session, end_session, log_telemetry
 from core.plugin_manager import plugin_manager
 from core.config_loader import load_settings
