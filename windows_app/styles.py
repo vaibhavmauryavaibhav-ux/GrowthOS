@@ -41,6 +41,26 @@ def apply_windows_acrylic(hwnd: int):
     except Exception:
         pass
 
+import html
+import re
+
+def render_markdown_to_html(text: str) -> str:
+    """Converts markdown bold, code, math, and lists to clean styled HTML for Qt labels."""
+    if not text:
+        return ""
+    escaped = html.escape(text)
+    # Bold **text** -> cyan bold
+    escaped = re.sub(r'\*\*(.*?)\*\*', r'<b style="color:#89dceb;">\1</b>', escaped)
+    # Inline code `code` -> green pill
+    escaped = re.sub(r'`(.*?)`', r'<code style="background-color:#181825; color:#a6e3a1; padding:2px 5px; border-radius:4px; font-family:Consolas;">\1</code>', escaped)
+    # Math $...$ -> yellow math font
+    escaped = re.sub(r'\$(.*?)\$', r'<span style="color:#f9e2af; font-family:Consolas, monospace; font-style:italic;">\1</span>', escaped)
+    # Bullet points
+    escaped = re.sub(r'^\s*[-*]\s+(.*)$', r'&bull; \1', escaped, flags=re.MULTILINE)
+    # Line breaks
+    escaped = escaped.replace("\n", "<br>")
+    return f"<div style='line-height: 140%;'>{escaped}</div>"
+
 # Stylesheet for Top Floating HUD Bar
 HUD_BAR_STYLE = f"""
 QWidget#HudBar {{

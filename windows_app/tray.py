@@ -153,7 +153,11 @@ class WindowsSystemTray(QSystemTrayIcon):
 
         menu.addSeparator()
 
-        # 3. Autostart checkbox
+        # 3. Backup & Export
+        backup_act = menu.addAction("💾 Backup & Export Deck / Ledger")
+        backup_act.triggered.connect(self._run_backup_export)
+
+        # 4. Autostart checkbox
         self.autostart_act = menu.addAction("🚀 Start with Windows")
         self.autostart_act.setCheckable(True)
         self.autostart_act.setChecked(is_autostart_enabled())
@@ -161,11 +165,26 @@ class WindowsSystemTray(QSystemTrayIcon):
 
         menu.addSeparator()
 
-        # 4. Exit
+        # 5. Exit
         exit_act = menu.addAction("Exit Growth OS")
         exit_act.triggered.connect(QApplication.instance().quit)
 
         self.setContextMenu(menu)
+
+    def _run_backup_export(self):
+        from PyQt6.QtWidgets import QMessageBox
+        from core.backup_export import run_full_backup_and_export
+        res = run_full_backup_and_export()
+        QMessageBox.information(
+            None, "Backup & Export Complete",
+            f"✅ Academic Data Exported Successfully!\n\n"
+            f"• Anki Cards TSV: {res['anki_tsv']}\n"
+            f"• Mistake Ledger CSV: {res['mistake_csv']}\n"
+            f"• Database Snapshot: {res['db_backup']}\n\n"
+            f"Opening export directory..."
+        )
+        if sys.platform == "win32":
+            os.startfile(res["export_dir"])
 
     def _toggle_hud(self):
         if self.hud_bar.isVisible():

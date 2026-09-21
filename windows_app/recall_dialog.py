@@ -20,9 +20,12 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPixmap, QKeySequence, QShortcut
 
-from core.db import get_due_recall_cards, update_card_fsrs
+from core.db import get_due_recall_cards, get_all_recall_cards, update_card_fsrs, delete_recall_card
 from core.fsrs_engine import FSRSEngine
-from windows_app.styles import DIALOG_STYLE, COLOR_CYAN, COLOR_RED, COLOR_GREEN, COLOR_PEACH, COLOR_TEXT, COLOR_MANTLE
+from windows_app.styles import (
+    DIALOG_STYLE, COLOR_CYAN, COLOR_RED, COLOR_GREEN, COLOR_PEACH,
+    COLOR_TEXT, COLOR_MANTLE, render_markdown_to_html
+)
 
 fsrs = FSRSEngine(target_retention=0.90)
 
@@ -59,9 +62,16 @@ class RecallDrillDialog(QDialog):
         self.counter_lbl = QLabel("Card 0/0")
         self.counter_lbl.setStyleSheet("color: #b4befe; font-weight: bold; font-size: 13px;")
 
+        self.del_btn = QPushButton("🗑 Delete")
+        self.del_btn.setStyleSheet("background-color: transparent; color: #f38ba8; border: none; font-size: 11px;")
+        self.del_btn.setToolTip("Permanently delete this card")
+        self.del_btn.clicked.connect(self._delete_current_card)
+
         top_row.addWidget(self.header_lbl)
         top_row.addStretch()
         top_row.addWidget(self.counter_lbl)
+        top_row.addSpacing(10)
+        top_row.addWidget(self.del_btn)
         self.main_layout.addLayout(top_row)
 
         # Countdown Progress Bar
@@ -168,7 +178,8 @@ class RecallDrillDialog(QDialog):
         card = self.cards[self.current_idx]
         self.counter_lbl.setText(f"Card {self.current_idx + 1} / {len(self.cards)}")
         self.tags_lbl.setText(f"🏷 {card.get('tags', 'General').upper()}")
-        self.question_lbl.setText(card.get("question", "No question text"))
+        self.question_lbl.setTextFormat(Qt.TextFormat.RichText)
+        self.question_lbl.setText(render_markdown_to_html(card.get("question", "No question text")))
 
         img_path = card.get("image_path")
         if img_path and Path(img_path).exists():
@@ -182,7 +193,8 @@ class RecallDrillDialog(QDialog):
         else:
             self.img_lbl.hide()
 
-        self.answer_lbl.setText(f"💡 Solution / Takeaway:\n{card.get('answer', 'Self-recalled item')}")
+        self.answer_lbl.setTextFormat(Qt.TextFormat.RichText)
+        self.answer_lbl.setText(render_markdown_to_html(f"💡 Solution / Takeaway:\n{card.get('answer', 'Self-recalled item')}"))
         self.answer_lbl.hide()
         self.separator.hide()
 
@@ -244,20 +256,54 @@ class RecallDrillDialog(QDialog):
         self.current_idx += 1
         self._load_current_card()
 
+    def _delete_current_card(self):
+        if not self.cards or self.current_idx >= len(self.cards):
+            return
+        card = self.cards[self.current_idx]
+        delete_recall_card(card["id"])
+        self.cards.pop(self.current_idx)
+        self._load_current_card()
+
     def _show_completion(self):
         self.timer.stop()
         self.counter_lbl.setText("Completed")
         self.progress_bar.hide()
+        self.del_btn.hide()
         self.tags_lbl.setText("🎉 DRILL COMPLETE")
-        self.question_lbl.setText("Outstanding work! All due items for this session have been reviewed using FSRS spaced repetition.")
+        all_cards = get_all_recall_cards()
+        self.question_lbl.setTextFormat(Qt.TextFormat.RichText)
+        self.question_lbl.setText(
+            f"Outstanding work! All due items for this session have been reviewed using FSRS spaced repetition.<br><br>"
+            f"Total cards in your personal deck: <b style='color:#89dceb;'>{len(all_cards)}</b>."
+        )
         self.img_lbl.hide()
         self.separator.hide()
         self.answer_lbl.hide()
         self.reveal_btn.setText("Close Drill")
         self.reveal_btn.show()
-        self.reveal_btn.clicked.disconnect()
+        try:
+            self.reveal_btn.clicked.disconnect()
+        except Exception:
+            pass
         self.reveal_btn.clicked.connect(self.accept)
+
+        if all_cards:
+            self.cram_btn = QPushButton("📚 Practice All Cards (Cram Mode)")
+            self.cram_btn.setProperty("class", "secondary-btn")
+            self.cram_btn.setStyleSheet("color: #b4befe; font-weight: bold;")
+            self.cram_btn.clicked.connect(self._practice_all_cards)
+            self.actions_layout.insertWidget(0, self.cram_btn)
+
         self.rating_widget.hide()
+
+    def _practice_all_cards(self):
+        self.cards = get_all_recall_cards()
+        self.current_idx = 0
+        if hasattr(self, "cram_btn"):
+            self.cram_btn.deleteLater()
+        self.del_btn.show()
+        self.progress_bar.show()
+        self._load_current_card()
 
 def open_recall_dialog():
     dlg = RecallDrillDialog()

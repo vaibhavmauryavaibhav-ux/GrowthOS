@@ -213,6 +213,14 @@ def update_card_fsrs(card_id: int, difficulty: float, stability: float,
     conn.commit()
     conn.close()
 
+def delete_recall_card(card_id: int):
+    """Deletes a card permanently from the database."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM recall_cards WHERE id = ?", (card_id,))
+    conn.commit()
+    conn.close()
+
 # ----------------- Mistake Ledger -----------------
 
 def log_mistake(subject: str, topic: str, error_type: str, notes: str = "", 

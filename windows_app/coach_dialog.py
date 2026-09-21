@@ -19,7 +19,10 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QPixmap, QKeySequence, QShortcut
 
-from windows_app.styles import DIALOG_STYLE, COLOR_CYAN, COLOR_GREEN, COLOR_LAVENDER, COLOR_MANTLE, COLOR_BASE, COLOR_SURFACE0
+from windows_app.styles import (
+    DIALOG_STYLE, COLOR_CYAN, COLOR_GREEN, COLOR_LAVENDER,
+    COLOR_MANTLE, COLOR_BASE, COLOR_SURFACE0, render_markdown_to_html
+)
 from core.ai_coach import chat_socratic_coach
 
 CAPTURES_DIR = Path.home() / ".growth_os" / "captures"
@@ -146,7 +149,9 @@ class CoachDialog(QDialog):
             self.detach_btn.hide()
 
     def _add_user_message(self, text: str):
-        lbl = QLabel(text)
+        lbl = QLabel()
+        lbl.setTextFormat(Qt.TextFormat.RichText)
+        lbl.setText(render_markdown_to_html(text))
         lbl.setWordWrap(True)
         lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         lbl.setStyleSheet(f"""
@@ -162,7 +167,9 @@ class CoachDialog(QDialog):
         self._scroll_to_bottom()
 
     def _add_mentor_message(self, text: str):
-        lbl = QLabel(text)
+        lbl = QLabel()
+        lbl.setTextFormat(Qt.TextFormat.RichText)
+        lbl.setText(render_markdown_to_html(text))
         lbl.setWordWrap(True)
         lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         lbl.setStyleSheet(f"""

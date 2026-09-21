@@ -35,6 +35,24 @@ from windows_app.coach_dialog import open_coach_dialog
 from windows_app.cbt_lockdown import open_cbt_lockdown
 from windows_app.syllabus_radar import open_syllabus_radar
 from core.audio_engine import focus_audio
+import json
+
+STATE_FILE = Path.home() / ".growth_os" / "hud_state.json"
+
+def load_hud_state() -> dict:
+    if STATE_FILE.exists():
+        try:
+            return json.loads(STATE_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    return {}
+
+def save_hud_state(data: dict):
+    try:
+        STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        STATE_FILE.write_text(json.dumps(data), encoding="utf-8")
+    except Exception:
+        pass
 
 class HudBar(QWidget):
     """Floating Acrylic Top Bar docked to the top-center of the screen."""
@@ -48,6 +66,7 @@ class HudBar(QWidget):
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setStyleSheet(HUD_BAR_STYLE)
+        self.setWindowOpacity(0.94)
 
         self.drag_position = QPoint()
         self.is_collapsed = False
@@ -55,7 +74,7 @@ class HudBar(QWidget):
         self.bar_height = 42
 
         self._build_ui()
-        self._position_top_center()
+        self._restore_or_position()
 
         # Update Timers
         self.telemetry_timer = QTimer(self)
@@ -192,11 +211,24 @@ class HudBar(QWidget):
         self.collapse_btn.clicked.connect(self.toggle_collapse)
         self.main_layout.addWidget(self.collapse_btn)
 
-    def _position_top_center(self):
-        screen = QApplication.primaryScreen().geometry()
-        x = (screen.width() - self.expanded_width) // 2
-        y = 12
-        self.setGeometry(x, y, self.expanded_width, self.bar_height)
+    def _restore_or_position(self):
+        saved = load_hud_state()
+        screen_geom = QApplication.primaryScreen().virtualGeometry()
+
+        saved_x = saved.get("x")
+        saved_y = saved.get("y")
+
+        if saved_x is not None and saved_y is not None:
+            x = max(screen_geom.left(), min(screen_geom.right() - 100, saved_x))
+            y = max(screen_geom.top(), min(screen_geom.bottom() - 50, saved_y))
+            self.setGeometry(x, y, self.expanded_width, self.bar_height)
+        else:
+            x = (screen_geom.width() - self.expanded_width) // 2
+            y = 12
+            self.setGeometry(x, y, self.expanded_width, self.bar_height)
+
+        if saved.get("collapsed", False):
+            self.toggle_collapse()
 
     def toggle_collapse(self):
         self.is_collapsed = not self.is_collapsed
@@ -208,6 +240,7 @@ class HudBar(QWidget):
             self.content_widget.show()
             self.collapse_btn.setText("―")
             self.resize(self.expanded_width, self.bar_height)
+        save_hud_state({"x": self.x(), "y": self.y(), "collapsed": self.is_collapsed})
 
     def update_telemetry(self):
         # 1. Focus Score
@@ -274,7 +307,7 @@ class HudBar(QWidget):
             self.audio_btn.setText("🎧 AUDIO")
             self.audio_btn.setStyleSheet("")
 
-    # Drag window handling
+    # Drag window handling & position persistence
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             self.drag_position = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
@@ -284,3 +317,16 @@ class HudBar(QWidget):
         if event.buttons() == Qt.MouseButton.LeftButton:
             self.move(event.globalPosition().toPoint() - self.drag_position)
             event.accept()
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            save_hud_state({"x": self.x(), "y": self.y(), "collapsed": self.is_collapsed})
+
+    # Fluid Hover Opacity
+    def enterEvent(self, event):
+        self.setWindowOpacity(1.0)
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self.setWindowOpacity(0.93)
+        super().leaveEvent(event)

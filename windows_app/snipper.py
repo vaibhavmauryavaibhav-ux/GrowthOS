@@ -178,17 +178,23 @@ class SnipperOverlay(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setCursor(QCursor(Qt.CursorShape.CrossCursor))
         
-        # Capture current entire desktop
-        screen = QApplication.primaryScreen()
-        self.screenshot = screen.grabWindow(0)
+        # Set geometry to full virtual screen across all monitors
+        geom = QApplication.primaryScreen().virtualGeometry()
+        self.setGeometry(geom)
+
+        # High-res capture across all monitors
+        try:
+            from PIL import ImageGrab
+            from PIL.ImageQt import ImageQt
+            pil_img = ImageGrab.grab(all_screens=True)
+            self.screenshot = QPixmap.fromImage(ImageQt(pil_img))
+        except Exception:
+            screen = QApplication.primaryScreen()
+            self.screenshot = screen.grabWindow(0)
         
         self.start_pos = QPoint()
         self.current_pos = QPoint()
         self.is_selecting = False
-
-        # Set geometry to full virtual screen
-        geom = QApplication.primaryScreen().virtualGeometry()
-        self.setGeometry(geom)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
